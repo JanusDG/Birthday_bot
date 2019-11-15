@@ -1,47 +1,52 @@
 import telebot
-bot = telebot.TeleBot("899632234:AAGPE5m5tlL0luFSRweaOjrbDclMBFTFyNs")
+bot = telebot.TeleBot('999922859:AAHogSOQzI9Muvgcfc-216KSTZVpEhd7hkY')
 
-@bot.message_handler(commands=['help', 'start'])
+
+mode = 'menu'
+user_markup = telebot.types.ReplyKeyboardMarkup(True, False)
+user_markup.row("Записати", 'Редагувати дані', 'Вихід')
+hide_markup = telebot.types.ReplyKeyboardRemove()
+
+
+@bot.message_handler(commands=['start'])
 def handle_start(message):
-    user_markup = telebot.types.ReplyKeyboardMarkup(True, False)
-
-    user_markup.row("CS", "BA")
-    user_markup.row("math", "meme")
-
-    user_markup.row("/pain")
-
-    msg = "Привіт, я твій перший бот!!!"
+    msg = "Привіт, ти хочеш змінити свої дані, чи записатись?"
     bot.send_message(message.from_user.id, msg, reply_markup=user_markup)
 
 
-@bot.message_handler(commands=["keyboard"])
-def handle_start(message):
-    hide_markup = telebot.types.ReplyKeyboardRemove()
-    msg = "Тепер ввімкнено режим звичайної клавіатури."
-    bot.send_message(message.from_user.id, msg, reply_markup=hide_markup)
-
-
 @bot.message_handler(content_types=['text'])
-def send_text(message):
-    if message.text.lower() == 'привіт':
-        bot.send_message(message.chat.id, 'Привіт студент')
-    elif message.text in ["Папа" , "Прощай", "Бувай"]:
-        bot.send_message(message.chat.id, 'папа')
-    elif message.text.lower() == "meme":
-        photo = open('meme.jpg', 'rb')
-        bot.send_photo(message.chat.id, photo)
-    elif message.text.lower() in "ba":
-        sti = open('sticker.webp', 'rb')
-        bot.send_sticker(message.chat.id, sti)
-    elif message.text.lower() in "cs":
-        photo = open('cs.jpg', 'rb')
-        bot.send_photo(message.chat.id, photo)
+def reply(message):
+    global mode
+    line = message.text.lower()
+    if mode == 'menu':
+        if line == "записати":
+            msg = 'Введіть дату народження через крапку'
+            mode = 'bd'
+            bot.send_message(message.from_user.id, msg, reply_markup=hide_markup)
+        elif line == "редагувати дані":
+            msg = ' '
+            bot.send_message(message.from_user.id, msg, reply_markup=hide_markup)
+        elif line == "вихід":
+            msg = 'введіть /start, щоб запустити бота'
+            bot.send_message(message.from_user.id, msg, reply_markup=hide_markup)
+    elif mode == 'bd':
+        with open(message.from_user.username + '.txt', 'w') as f:
+            f.write(line + '\n')
+        mode = 'name'
+        msg = "Введіть ім'я і прізвище через пробіл"
+        bot.send_message(message.from_user.id, msg)
+    elif mode == 'name':
+        with open(message.from_user.username + '.txt', 'a') as f:
+            f.write(line + '\n')
+        mode = 'preference'
+        msg = "Що ви хочете?"
+        bot.send_message(message.from_user.id, msg)
+    elif mode == 'preference':
+        with open(message.from_user.username + '.txt', 'a') as f:
+            f.write(line + '\n')
+        mode = 'menu'
+        msg = 'Готово'
+        bot.send_message(message.from_user.id, msg, reply_markup=user_markup)
 
-@bot.message_handler(commands=["pain"])
-def handle_text(message):
-    hide_markup = telebot.types.ReplyKeyboardRemove()
-    msg = "https://cms.ucu.edu.ua/my/"
-    bot.send_message(message.from_user.id, msg, reply_markup=hide_markup)
-        
-    
+
 bot.polling()

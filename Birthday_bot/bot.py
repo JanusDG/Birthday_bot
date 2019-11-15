@@ -1,12 +1,17 @@
 import telebot
-bot = telebot.TeleBot('999922859:AAHogSOQzI9Muvgcfc-216KSTZVpEhd7hkY')
+bot = telebot.TeleBot('997891715:AAHFVn7j4lZd71ZOxK8oQatLEoiMJ4XxSNQ')
 
 
 mode = 'menu'
 user_markup = telebot.types.ReplyKeyboardMarkup(True, False)
 user_markup.row("Записати", 'Редагувати дані', 'Вихід')
 hide_markup = telebot.types.ReplyKeyboardRemove()
-
+mode_message = {
+    'name': "Введіть ім'я і прізвище через пробіл",
+    'preference': "Що ви хочете?",
+    'menu': [' ', 'введіть /start, щоб запустити бота', 'Готово'],
+    'bd': 'Введіть дату народження через крапку'
+}
 
 @bot.message_handler(commands=['start'])
 def handle_start(message):
@@ -22,31 +27,34 @@ def reply(message):
         if line == "записати":
             msg = 'Введіть дату народження через крапку'
             mode = 'bd'
-            bot.send_message(message.from_user.id, msg, reply_markup=hide_markup)
+            bot.send_message(message.from_user.id,
+                             msg,
+                             reply_markup=hide_markup)
         elif line == "редагувати дані":
-            msg = ' '
-            bot.send_message(message.from_user.id, msg, reply_markup=hide_markup)
+            bot.send_message(message.from_user.id,
+                             mode_message[mode][0],
+                             reply_markup=hide_markup)
         elif line == "вихід":
-            msg = 'введіть /start, щоб запустити бота'
-            bot.send_message(message.from_user.id, msg, reply_markup=hide_markup)
+            bot.send_message(message.from_user.id,
+                             mode_message[mode][1],
+                             reply_markup=hide_markup)
     elif mode == 'bd':
         with open(message.from_user.username + '.txt', 'w') as f:
             f.write(line + '\n')
         mode = 'name'
-        msg = "Введіть ім'я і прізвище через пробіл"
-        bot.send_message(message.from_user.id, msg)
+        bot.send_message(message.from_user.id, mode_message[mode])
     elif mode == 'name':
         with open(message.from_user.username + '.txt', 'a') as f:
             f.write(line + '\n')
         mode = 'preference'
-        msg = "Що ви хочете?"
-        bot.send_message(message.from_user.id, msg)
+        bot.send_message(message.from_user.id, mode_message[mode])
     elif mode == 'preference':
         with open(message.from_user.username + '.txt', 'a') as f:
             f.write(line + '\n')
         mode = 'menu'
-        msg = 'Готово'
-        bot.send_message(message.from_user.id, msg, reply_markup=user_markup)
+        bot.send_message(message.from_user.id,
+                         mode_message[mode][2],
+                         reply_markup=user_markup)
 
 
 bot.polling()
